@@ -16,3 +16,4 @@ ansible-playbook ubuntu_workstation.yml
 
 Extra:
 - https://sw.kovidgoyal.net/kitty/binary/#desktop-integration-on-linux
+- `chsh -s /usr/bin/fish`
