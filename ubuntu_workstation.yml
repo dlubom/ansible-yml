@@ -26,5 +26,9 @@
       apt:
         name: survex
         state: present
-
+    
+    - name: Install fzf
+      apt:
+        name: fzf
+        state: present
 
