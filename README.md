@@ -7,7 +7,7 @@ This repository contains an Ansible playbook for setting up an Ubuntu workstatio
 First, install Ansible:
 
 ```sh
-sudo apt install ansible
+bash ansible-install.sh
 ```
 
 ```sh
