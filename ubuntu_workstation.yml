@@ -31,4 +31,6 @@
       apt:
         name: fzf
         state: present
-
+    
+    - name: Change shell to fish
+      shell: chsh -s $(which fish)
