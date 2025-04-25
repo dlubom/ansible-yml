@@ -155,12 +155,23 @@
         url: https://github.com/duckdb/duckdb/releases/download/v1.2.2/duckdb_cli-linux-amd64.zip # Check for the latest version
         dest: /tmp/duckdb.zip
         mode: '0644'
+        force: yes # Add this line to overwrite if the file exists
+
+    - name: Remove existing DuckDB binary if exists
+      file:
+        path: /opt/duckdb/duckdb
+        state: absent
 
     - name: Unzip DuckDB
       unarchive:
         src: /tmp/duckdb.zip
         dest: /opt/duckdb
         remote_src: yes
+
+    - name: Remove existing DuckDB symbolic link if exists
+      file:
+        path: /usr/local/bin/duckdb
+        state: absent
 
     - name: Create symbolic link for DuckDB
       file:
