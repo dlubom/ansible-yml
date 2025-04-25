@@ -305,22 +305,37 @@
           - curl
         state: present
 
-    - name: Download Google Cloud public signing key
-      apt_key:
-        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-        state: present
+    - name: Ensure /etc/apt/keyrings directory exists
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download Kubernetes public signing key
+      get_url:
+        url: https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key
+        dest: /tmp/kubernetes-apt-keyring.asc
+        mode: '0644'
+
+    - name: Add Kubernetes GPG key
+      shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+      args:
+        creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg # Avoid re-downloading/processing if key exists
 
     - name: Add Kubernetes apt repository
       apt_repository:
-        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /"
         state: present
-        filename: kubernetes
+        filename: kubernetes-release # Use a descriptive filename
 
     - name: Install kubectl
       apt:
         name: kubectl
         state: present
         update_cache: yes
-    
+
     - name: Change shell to fish
-      shell: chsh -s $(which fish)
+      user: # Use the user module for changing the shell idempotently
+        name: "{{ ansible_user_id }}"
+        shell: /usr/bin/fish
+      become: yes # Need become to change shell for other users if needed, or the target user itself
