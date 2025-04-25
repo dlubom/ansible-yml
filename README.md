@@ -11,7 +11,7 @@ bash ansible-install.sh
 ```
 
 ```sh
-ansible-playbook ubuntu_workstation.yml
+sudo ansible-playbook ubuntu_workstation.yml
 ```
 
 Extra:

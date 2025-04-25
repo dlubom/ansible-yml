@@ -76,6 +76,32 @@
         deb: /tmp/scala.deb
         state: present
 
+    # Install IntelliJ IDEA Community Edition
+    - name: Download IntelliJ IDEA Community Edition
+      get_url:
+        url: "https://download.jetbrains.com/product?code=IIC&latest&distribution=linux" # Use stable redirect URL for latest community edition
+        dest: /tmp/ideaIC.tar.gz
+        mode: '0644'
+
+    - name: Create IntelliJ IDEA installation directory
+      file:
+        path: /opt/idea
+        state: directory
+        mode: '0755'
+
+    - name: Extract IntelliJ IDEA
+      unarchive:
+        src: /tmp/ideaIC.tar.gz
+        dest: /opt/idea
+        extra_opts: [--strip-components=1] # Remove the top-level directory from the archive
+        remote_src: yes
+
+    - name: Create symbolic link for IntelliJ IDEA executable
+      file:
+        src: /opt/idea/bin/idea.sh
+        dest: /usr/local/bin/idea
+        state: link
+
     # Install Go
     - name: Download Go binary
       get_url:
@@ -126,7 +152,7 @@
 
     - name: Download DuckDB
       get_url:
-        url: https://github.com/duckdb/duckdb/releases/download/v0.9.2/duckdb_cli-linux-amd64.zip
+        url: https://github.com/duckdb/duckdb/releases/download/v1.2.2/duckdb_cli-linux-amd64.zip # Check for the latest version
         dest: /tmp/duckdb.zip
         mode: '0644'
 
