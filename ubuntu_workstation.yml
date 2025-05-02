@@ -76,6 +76,48 @@
         deb: /tmp/scala.deb
         state: present
 
+    # Install sbt (Scala Build Tool)
+    - name: Install sbt dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - curl
+          - gnupg
+        state: present
+
+    - name: Add sbt repository (main)
+      apt_repository:
+        repo: "deb https://repo.scala-sbt.org/scalasbt/debian all main"
+        state: present
+        filename: sbt
+        update_cache: no # Defer cache update until key is added
+
+    - name: Add sbt repository (old)
+      apt_repository:
+        repo: "deb https://repo.scala-sbt.org/scalasbt/debian /"
+        state: present
+        filename: sbt_old
+        update_cache: no # Defer cache update until key is added
+
+    - name: Add sbt GPG key
+      shell: >
+        curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x2EE0EA64E40A89B84B2DF73499E82A75642AC823" |
+        gpg --no-default-keyring --keyring gnupg-ring:/etc/apt/trusted.gpg.d/scalasbt-release.gpg --import
+      args:
+        creates: /etc/apt/trusted.gpg.d/scalasbt-release.gpg # Avoid re-importing the key
+      changed_when: false # Shell module always reports change unless specified
+
+    - name: Set permissions for sbt GPG key
+      file:
+        path: /etc/apt/trusted.gpg.d/scalasbt-release.gpg
+        mode: '0644'
+
+    - name: Install sbt
+      apt:
+        name: sbt
+        state: present
+        update_cache: yes # Update cache after adding repo and key
+
     # Install IntelliJ IDEA Community Edition
     - name: Download IntelliJ IDEA Community Edition
       get_url:
