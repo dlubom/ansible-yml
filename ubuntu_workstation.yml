@@ -2,6 +2,9 @@
 - name: Setup ubuntu workstation
   hosts: localhost
   become: yes
+  vars:
+    survex_version: "1.4.20"
+
   tasks:
     - name: Update apt cache
       apt:
@@ -365,10 +368,45 @@
         name: fish
         state: present
 
-    - name: Install Survex
+    - name: Install Survex build dependencies
       apt:
-        name: survex
+        name:
+          - build-essential
+          - libwxgtk3.2-dev
+          - libproj-dev
+          - libgdal-dev
+          - wget
         state: present
+
+    - name: Check installed Survex version
+      shell: cavern --version | head -n1
+      register: survex_installed_version
+      changed_when: false
+      failed_when: false
+
+    - name: Download Survex source archive
+      get_url:
+        url: "https://survex.com/software/{{ survex_version }}/survex-{{ survex_version }}.tar.gz"
+        dest: "/tmp/survex-{{ survex_version }}.tar.gz"
+        mode: '0644'
+      when: survex_version not in survex_installed_version.stdout
+
+    - name: Extract Survex source archive
+      unarchive:
+        src: "/tmp/survex-{{ survex_version }}.tar.gz"
+        dest: /tmp
+        remote_src: yes
+        creates: "/tmp/survex-{{ survex_version }}"
+      when: survex_version not in survex_installed_version.stdout
+
+    - name: Build and install Survex from source
+      shell: |
+        ./configure
+        make -j"$(nproc)"
+        make install
+      args:
+        chdir: "/tmp/survex-{{ survex_version }}"
+      when: survex_version not in survex_installed_version.stdout
     
     - name: Install fzf
       apt:
